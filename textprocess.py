@@ -5,23 +5,23 @@ import codecs
 from langconv import * # convert Traditional Chinese characters to Simplified Chinese characters
 import random
 import re
-datafile=r'C:\Users\guan\Desktop\data\bookcomment.csv'#数据源文件
+datafile=r'C:\Users\guan\Desktop\data\comment.csv'#数据源文件
 Xfile=r'C:\Users\guan\Desktop\data\X.txt'#分词后的语句文件
 Yfile=r'C:\Users\guan\Desktop\data\Y.txt'#标注文件，与语句文件逐行对应
 stopfile=r'C:\Users\guan\Desktop\data\chinese_stop_words.txt'#停止词文件
 stopwords=[line.rstrip() for line in codecs.open(stopfile,'r',encoding="utf-8")]
-data=[]
-with codecs.open(datafile, "r") as doc:
+data=[[],[],[]]
+with codecs.open(datafile, "r",encoding='utf-8') as doc:
     file=csv.reader(doc)
     for line in file:
         try:
-            starpre=line[6]
+            starpre=line[0]
             if starpre=='力荐':
-                star=2
+                star=1
             elif starpre=='推荐':
                 star=1
             elif starpre=='还行':
-                star=0
+                star=2
             elif starpre=='较差':
                 star=0
             elif starpre=='很差':
@@ -44,17 +44,21 @@ with codecs.open(datafile, "r") as doc:
                     if seg != ' ':
                         final.append(seg)
             if len(final)>0:
-                data.append((final, star))
+                data[star].append((final, star))
         except:
             continue
-
-print (len(data))
+random.shuffle(data[0])
+random.shuffle(data[1])
+data_final=[]
+data_final.extend(data[0])
+data_final.extend(data[1])
+print (len(data_final))
 with codecs.open(Xfile,'w',encoding='UTF-8') as out:
-    for line in data:
+    for line in data_final:
         s=''
         for item in line[0]:
             s=s+str(item)+' '
         out.write(s+'\r\n')
 with codecs.open(Yfile,'w',encoding='UTF-8') as out:
-    for line in data:
+    for line in data_final:
         out.write(str(line[1])+'\r\n')

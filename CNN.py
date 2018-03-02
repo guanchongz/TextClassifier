@@ -3,18 +3,19 @@ import tensorflow as tf
 import numpy as np
 import os
 class config(object):
-    n_classes=3
+    n_classes=2
     n_features=64
-    n_sentence=60
-    dropout_keep=0.5
+    n_sentence=50
+    dropout_keep=1.0
     batch_size=256
-    n_epochs=20
+    n_epochs=200
     lr=0.0005
-    l2_rate= 10e-6
+    l2_rate= 0.0
     filter_steps=[2,3,4,5]
     n_filters=100
+    units_hidden=100
     learning_rate=0.0075
-    data_rate_train=0.8
+    data_rate_train=0.9
 
 class CNNClassifier(object):
     def __init__(self):
@@ -60,16 +61,20 @@ class CNNClassifier(object):
         conv_output=tf.reshape(conv_output,shape=[-1,n_units])
         conv_output_drop=tf.nn.dropout(conv_output,self.config.dropout_keep)
         #single DNN layer
-        self.W=tf.get_variable(name='W',shape=[n_units,self.config.n_classes],initializer = tf.contrib.layers.xavier_initializer())
-        self.b=tf.Variable(tf.constant(0.0,shape=[self.config.n_classes]))
-        self.prediction=tf.nn.xw_plus_b(conv_output_drop,self.W,self.b)
+        self.W1=tf.get_variable(name='W',shape=[n_units,self.config.units_hidden],initializer = tf.contrib.layers.xavier_initializer())
+        self.b1=tf.Variable(tf.constant(0.0,shape=[self.config.units_hidden]))
+        x_hidden=tf.nn.relu(tf.nn.xw_plus_b(conv_output_drop,self.W1,self.b1))
+        x_hidden_drop=tf.nn.dropout(x_hidden,self.config.dropout_keep)
+        self.W2=tf.get_variable(name='W2',shape=[self.config.units_hidden,self.config.n_classes],initializer=tf.contrib.layers.xavier_initializer())
+        self.b2=tf.Variable(tf.constant(0.0,shape=[self.config.n_classes]))
+        self.prediction=tf.nn.xw_plus_b(x_hidden_drop,self.W2,self.b2)
         return self.prediction
 
     def add_loss_op(self,prediction):
-        l2_loss=tf.nn.l2_loss(self.W)+tf.nn.l2_loss(self.b)
+        l2_loss=tf.nn.l2_loss(self.W1)+tf.nn.l2_loss(self.b1)+tf.nn.l2_loss(self.W2)+tf.nn.l2_loss(self.b2)
         loss=tf.nn.softmax_cross_entropy_with_logits(logits=prediction,labels=self.label_placeholders)
         losses=tf.reduce_mean(loss)+self.config.l2_rate*l2_loss
-        pred = tf.equal(tf.argmax(prediction,axis=1), tf.argmax(self.label_placeholders, axis=1))
+        pred = tf.equal(tf.argmax(tf.nn.softmax(prediction),axis=1), tf.argmax(self.label_placeholders, axis=1))
         accuracy= tf.reduce_mean(tf.cast(pred,tf.float32))
         return losses,accuracy
 
@@ -133,7 +138,7 @@ class CNNClassifier(object):
                     print('the accuracy in test :{:.3f}'.format(accuracy_test))
                     iteration_epoch+=1
                     iteration_batch=0
-                    if iteration_epoch <= n_batches*self.config.n_epochs :
+                    if iteration_epoch < n_batches*self.config.n_epochs :
                         print('epoch {0} =========================================================================='.format(iteration_epoch))
 
     def fit(self,inputs,labels):
