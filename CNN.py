@@ -1,11 +1,11 @@
 import tensorflow as tf
 import numpy as np
 import os
-X_embedding_file=r'C:\Users\guan\Desktop\data\X_embedding.npy'
-Y_vec_file=r'C:\Users\guan\Desktop\data\Y_vec.npy'
+X_embedding_file=r'C:\Users\guan\Desktop\data\X_embedding_2and5.npy'
+Y_vec_file=r'C:\Users\guan\Desktop\data\Y_vec_2and5.npy'
 class config(object):
     n_classes=2
-    n_features=64
+    n_features=128
     n_sentence=50
     dropout_keep=1.0
     batch_size=512
@@ -63,9 +63,11 @@ class CNNClassifier(object):
         self.W=tf.get_variable(name='W',shape=[n_units,self.config.n_classes],initializer = tf.contrib.layers.xavier_initializer())
         self.b=tf.Variable(tf.constant(0.0,shape=[self.config.n_classes]))
         self.prediction=tf.nn.xw_plus_b(conv_output_drop,self.W,self.b)
+        # For convenience to use the tensorflow function,we return the values which can be transformed to y_hat only by a softmax function
         return self.prediction
 
     def add_loss_op(self,prediction):
+        # Here we use softmax repeatedly,but the n_class is so small that the wasted time is too little.
         l2_loss=tf.nn.l2_loss(self.W)+tf.nn.l2_loss(self.b)
         loss=tf.nn.softmax_cross_entropy_with_logits(logits=prediction,labels=self.label_placeholders)
         losses=tf.reduce_mean(loss)+self.config.l2_rate*l2_loss
@@ -101,43 +103,47 @@ class CNNClassifier(object):
         accuracy = np.mean(accuracy_list)
         return accuracy
 
-    def run(self,inputs,labels):
+    def run(self,inputs,labels,length):
         data_size=len(labels)
         assert data_size == len(inputs), 'inputs_size not equal to labels_size'
+        #To keep the matching of inputs and lables ,we should use the shuffle index
         shuffle_index = np.random.permutation(np.arange(data_size))
         inputs_shuffle = inputs[shuffle_index]
         labels_shuffle = labels[shuffle_index]
+        length_shuffle = length[shuffle_index]
         index_split=int(data_size*self.config.data_rate_train)
         inputs_train=inputs_shuffle[:index_split]
         labels_train=labels_shuffle[:index_split]
+        length_train=length_shuffle[:index_split]
         inputs_test=inputs_shuffle[index_split:]
         labels_test=labels_shuffle[index_split:]
+        length_test=length_shuffle[index_split:]
         print('inputs_train:',inputs_train.shape,'labels_train:',labels_train.shape)
-        n_batches = int((index_split - 1) / self.config.batch_size) + 1
+        #Only in this model I abandon the last several sentences.I don't find a way to get the dynamic n_batches to build the cycle in prediction.
+        n_batches = int((index_split - 1) / self.config.batch_size)
         self.session=tf.Session()
         with self.session as sess:
             sess.run(tf.global_variables_initializer())
             print('Thare are {0} epoches'.format(self.config.n_epoches), 'each epoch has {0} steps'.format(n_batches))
             for iteration_epoch in range(self.config.n_epoches):
-                print('epoch {0} =========================================================================='.format(
-                    iteration_epoch + 1))
-                train_loss = []
-                train_accuracy = []
+                print('epoch {0} =========================================================================='.format(iteration_epoch+1))
+                train_loss=[]
+                train_accuracy=[]
                 for iteration_batch in range(n_batches):
-                    start = iteration_batch * self.config.batch_size
+                    start=iteration_batch*self.config.batch_size
                     end = min(start + self.config.batch_size, data_size)
-                    loss, accuracy = self.train_on_batch(sess, inputs_train[start:end], labels_train[start:end])
-                    iteration_batch += 1
-                    if (iteration_batch % 50) == 0:
+                    loss,accuracy=self.train_on_batch(sess,inputs_train[start:end],labels_train[start:end])
+                    iteration_batch+=1
+                    if (iteration_batch % 50) == 0 :
                         print('training step:{0}'.format(iteration_batch))
                     train_loss.append(loss)
                     train_accuracy.append(accuracy)
-                train_loss_epoch = np.mean(train_loss)
-                train_accuracy_epoch = np.mean(train_accuracy)
-                print('loss_train:{:.3f}'.format(train_loss_epoch),
-                      'accuracy_train:{:.3f}'.format(train_accuracy_epoch))
-                self.saver.save(sess, os.path.join(self.save_path, 'model'), global_step=(iteration_epoch))
-                accuracy_test = self.test(sess, inputs_test, labels_test)
+                #The loss in train is the mean value of all loss on batches.
+                train_loss_epoch=np.mean(train_loss)
+                train_accuracy_epoch=np.mean(train_accuracy)
+                print('loss_train:{:.3f}'.format(train_loss_epoch),'accuracy_train:{:.3f}'.format(train_accuracy_epoch))
+                self.saver.save(sess,os.path.join(self.save_path,'model'),global_step=(iteration_epoch))
+                accuracy_test=self.test(sess,inputs_test,labels_test)
                 print('the accuracy in test :{:.3f}'.format(accuracy_test))
 
     def fit(self,inputs,labels):

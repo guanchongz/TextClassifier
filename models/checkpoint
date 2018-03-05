@@ -1,6 +1,4 @@
-model_checkpoint_path: "C:\\Users\\guan\\Documents\\GitHub\\TextClassifier\\models\\model-5"
+model_checkpoint_path: "C:\\Users\\guan\\Documents\\GitHub\\TextClassifier\\models\\model-2"
+all_model_checkpoint_paths: "C:\\Users\\guan\\Documents\\GitHub\\TextClassifier\\models\\model-0"
 all_model_checkpoint_paths: "C:\\Users\\guan\\Documents\\GitHub\\TextClassifier\\models\\model-1"
 all_model_checkpoint_paths: "C:\\Users\\guan\\Documents\\GitHub\\TextClassifier\\models\\model-2"
-all_model_checkpoint_paths: "C:\\Users\\guan\\Documents\\GitHub\\TextClassifier\\models\\model-3"
-all_model_checkpoint_paths: "C:\\Users\\guan\\Documents\\GitHub\\TextClassifier\\models\\model-4"
-all_model_checkpoint_paths: "C:\\Users\\guan\\Documents\\GitHub\\TextClassifier\\models\\model-5"

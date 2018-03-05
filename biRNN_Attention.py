@@ -3,9 +3,9 @@ import numpy as np
 import os
 from tensorflow.contrib import rnn
 
-X_embedding_file = r'C:\Users\guan\Desktop\data\X_embedding_self.npy'
-Y_vec_file = r'C:\Users\guan\Desktop\data\Y_vec_self.npy'
-length_sentence_file=r'C:\Users\guan\Desktop\data\length.npy'
+X_embedding_file = r'C:\Users\guan\Desktop\data\X_embedding_2and5.npy'
+Y_vec_file = r'C:\Users\guan\Desktop\data\Y_vec_2and5.npy'
+length_sentence_file=r'C:\Users\guan\Desktop\data\length_2and5.npy'
 class config(object):
     n_classes=2
     n_features=128
@@ -75,17 +75,19 @@ class AttentionClassifier(object):
         h_drop=tf.nn.dropout(h,self.config.dropout_keep)
         self.W=tf.Variable(tf.truncated_normal([self.config.n_features*2,self.config.n_classes],stddev=0.1))
         self.b=tf.Variable(tf.constant(0.0,shape=[self.config.n_classes]))
-        y_hat = tf.nn.xw_plus_b(h_drop, self.W, self.b)
-        return y_hat
+        #For convenience to use the tensorflow function,we return the values which can be transformed to y_hat only by a softmax function
+        pred = tf.nn.xw_plus_b(h_drop, self.W, self.b)
+        return pred
 
-    def add_loss_op(self,y_hat):
+    def add_loss_op(self,pred):
+        #Here we use softmax repeatedly,but the n_class is so small that the wasted time is too little.
         l2_loss=tf.nn.l2_loss(self.W)+tf.nn.l2_loss(self.b)+tf.nn.l2_loss(self.W_attention)+ \
                         tf.nn.l2_loss(self.b_attention)+tf.nn.l2_loss(self.u_attention)
-        loss=tf.reduce_mean(tf.nn.softmax_cross_entropy_with_logits(logits=y_hat,labels=self.label_placeholders))
+        loss=tf.reduce_mean(tf.nn.softmax_cross_entropy_with_logits(logits=pred,labels=self.label_placeholders))
         loss+=self.config.l2_loss_rate*l2_loss
-        prediction=tf.nn.softmax(y_hat)
-        pred=tf.equal(tf.argmax(prediction,axis=1),tf.argmax(self.label_placeholders,axis=1))
-        accuracy = tf.reduce_mean(tf.cast(pred, tf.float32))
+        y_hat=tf.nn.softmax(pred)
+        prediction=tf.equal(tf.argmax(y_hat,axis=1),tf.argmax(self.label_placeholders,axis=1))
+        accuracy = tf.reduce_mean(tf.cast(prediction, tf.float32))
         return loss,accuracy
 
     def add_training_op(self,loss):
@@ -114,6 +116,7 @@ class AttentionClassifier(object):
     def run(self,inputs,labels,length):
         data_size=len(labels)
         assert data_size == len(inputs), 'inputs_size not equal to labels_size'
+        #To keep the matching of inputs and lables ,we should use the shuffle index
         shuffle_index = np.random.permutation(np.arange(data_size))
         inputs_shuffle = inputs[shuffle_index]
         labels_shuffle = labels[shuffle_index]
@@ -126,7 +129,8 @@ class AttentionClassifier(object):
         labels_test=labels_shuffle[index_split:]
         length_test=length_shuffle[index_split:]
         print('inputs_train:',inputs_train.shape,'labels_train:',labels_train.shape)
-        n_batches = int((index_split - 1) / self.config.batch_size) + 1
+        #Only in this model I abandon the last several sentences.I don't find a way to get the dynamic n_batches to build the cycle in prediction.
+        n_batches = int((index_split - 1) / self.config.batch_size)
         self.session=tf.Session()
         with self.session as sess:
             sess.run(tf.global_variables_initializer())
@@ -144,6 +148,7 @@ class AttentionClassifier(object):
                         print('training step:{0}'.format(iteration_batch))
                     train_loss.append(loss)
                     train_accuracy.append(accuracy)
+                #The loss in train is the mean value of all loss on batches.
                 train_loss_epoch=np.mean(train_loss)
                 train_accuracy_epoch=np.mean(train_accuracy)
                 print('loss_train:{:.3f}'.format(train_loss_epoch),'accuracy_train:{:.3f}'.format(train_accuracy_epoch))

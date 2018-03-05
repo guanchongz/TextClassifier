@@ -2,13 +2,13 @@
 import csv
 import jieba
 import codecs
-from langconv import * # convert Traditional Chinese characters to Simplified Chinese characters
+from langconv import *
 import random
 import re
 #from gensim.models import Word2Vec
 datafile=r'C:\Users\guan\Desktop\data\comment.csv'#file of resources
-Xfile=r'C:\Users\guan\Desktop\data\X_3class.txt'#file of inputs sentences
-Yfile=r'C:\Users\guan\Desktop\data\Y_3class.txt'#file of labels
+Xfile=r'C:\Users\guan\Desktop\data\X_2and5.txt'#file of inputs sentences
+Yfile=r'C:\Users\guan\Desktop\data\Y_2and5.txt'#file of labels
 stopfile=r'C:\Users\guan\Desktop\data\chinese_stop_words.txt'#file of stop words
 word2vec=r'C:\Users\guan\Desktop\data\word2vec_full.model'
 stopwords=[line.rstrip() for line in codecs.open(stopfile,'r',encoding="utf-8")]
@@ -17,48 +17,56 @@ with codecs.open(datafile, "r",encoding='utf-8') as doc:
     file=csv.reader(doc)
     for line in file:
         try:
+            #Obtain the sentence of the classes I need
             starpre=line[0]
             if starpre=='力荐':
-                star=2
-            elif starpre=='推荐':
-                star=3
-            elif starpre=='还行':
                 star=1
+            elif starpre=='推荐':
+                continue
+            elif starpre=='还行':
+                continue
             elif starpre=='较差':
-                star=4
-            elif starpre=='很差':
                 star=0
+            elif starpre=='很差':
+                continue
             else :
                 continue
             text=line[1]
-
+            #only chinese character can be saved
             p = re.compile(r'[^\u4e00-\u9fa5]')
             text = " ".join(p.split(text)).strip()
-
+            #convert Traditional Chinese characters to Simplified Chinese characters
             text = Converter('zh-hans').convert(text)
+            #abandon the line breaker
             text = text.replace("\n", "")
             text = text.replace("\r", "")
+            #cut the sentence into words(perhaps phrase?)
             seglist=jieba.cut(text,cut_all=False)
             seglist=list(seglist)
             final=[]
             for seg in seglist:#abandon stop words
-                if seg not in stopwords:
+                if seg not in stopwords:#abandon empty lines
                     if seg != ' ':
                         final.append(seg)
             if len(final)>0:
+                #for convenience in shuffle action,I use a tuple to keep the pair.
                 data[star].append((final,star))
         except:
             continue
+#if I should extract part of the sentence,I will shuffle them first,because the sentence in the file is ranked in some order.
 #for i in range(5):
  #   random.shuffle(data[i])
 data_final=[]
-for i in range(3):
-    data_final.extend(data[i][:30000])
+#extract the data to one list
+for i in range(2):
+    data_final.extend(data[i])
 print (len(data_final))
-random.shuffle(data_final)
+#The following lines train a word2vec model
+#random.shuffle(data_final)
 #data_final=data_final[:100000]
 #model=Word2Vec(data_final,size=128)
 #model.save(word2vec)
+#save the sentences and labels separately
 with codecs.open(Xfile,'w',encoding='UTF-8') as out:
     for line in data_final:
         s=''
