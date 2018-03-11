@@ -174,7 +174,6 @@ class AttentionClassifier(object):
         self.save_path = os.path.abspath(os.path.join(model_path, model_position))
         session=tf.Session()
         with session as sess:
-            sess.run(tf.global_variables_initializer())
             self.saver.restore(sess=sess, save_path=os.path.join(self.save_path,'model'))
             data_size=len(length)
             pred=[]

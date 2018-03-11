@@ -9,7 +9,7 @@ X_embedding_file_test = r'C:\Users\guan\Desktop\data\X_embedding_2and5.npy'
 #I split the data set for train and test instead.
 Y_vec_file_test = r'C:\Users\guan\Desktop\data\Y_vec_2and5.npy'
 length_sentence_file_test=r'C:\Users\guan\Desktop\data\length_2and5.npy'
-n_models=9 
+n_models=9#the number of  models which would be ensembled
 def main():
     #train()
     test()
