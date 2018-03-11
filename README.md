@@ -11,3 +11,5 @@ The excel file "parameters recording" is my recording for adjusting parameters."
 In my experiment，the CNN model performs poor.I think the reason is the length of sentences has a serious differentiation:there are lost of sentences of 1 or 2 words and sentences of 10+ words. 3 layers LSTMs model and bi-GRU with attention model get the best and closely performance,with the 1.0 dropout keep probability.LSTM model is best suitable to l2_loss rate in 10e-6,and the attention model is best suitable to 10e-5.Dropout always has bad impact CNN and attention models ,and seems to be unrelated to the performance of LSTMs model(make training slowly of course).I want to know why.
 
 Limited by my GPU,I'm sorry to I could only use the adam optimizer for efficiency.
+
+At last I use a bagging methon to improve the performance,though the result only be  a little better.
