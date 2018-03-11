@@ -52,12 +52,16 @@ def main():
     X_embedding=np.array(X_embedding)
     Y_vec=np.array(Y_vec)
     length_sentence=np.array(length_sentence,dtype=int)
+    shuffle_index = np.random.permutation(len(length_sentence))
+    inputs_shuffle = X_embedding[shuffle_index]
+    labels_shuffle = Y_vec[shuffle_index]
+    length_shuffle = length_sentence[shuffle_index]
     #Observe the shape
     print(X_embedding.shape,Y_vec.shape,length_sentence.shape)
     #save numpy arrays
-    np.save(X_embedding_file,X_embedding)
-    np.save(Y_vec_file,Y_vec)
-    np.save(length_sentence_file,length_sentence)
+    np.save(X_embedding_file,inputs_shuffle)
+    np.save(Y_vec_file,labels_shuffle)
+    np.save(length_sentence_file,length_shuffle)
 
     
 if __name__=="__main__":

@@ -6,6 +6,7 @@ from tensorflow.contrib import rnn
 X_embedding_file = r'C:\Users\guan\Desktop\data\X_embedding_2and5.npy'
 Y_vec_file = r'C:\Users\guan\Desktop\data\Y_vec_2and5.npy'
 length_sentence_file=r'C:\Users\guan\Desktop\data\length_2and5.npy'
+model_path=r'C:\Users\guan\Desktop\data\models'
 class config(object):
     n_classes=2
     n_features=128
@@ -14,7 +15,7 @@ class config(object):
     batch_size=256
     n_time_steps=50
     l2_loss_rate= 10e-5
-    n_epoches=20
+    n_epoches=15
     data_rate_train=0.8
 
 class AttentionClassifier(object):
@@ -24,10 +25,7 @@ class AttentionClassifier(object):
         self.pred = self.add_prediction_op()
         self.loss, self.accuracy = self.add_loss_op(self.pred)
         self.train_op = self.add_training_op(self.loss)
-        self.saver = tf.train.Saver()
-        self.save_path = os.path.abspath(os.path.join(os.path.curdir, 'models'))
-        if not os.path.exists(self.save_path):
-            os.makedirs(self.save_path)
+        self.saver = tf.train.Saver(max_to_keep=20)
 
     def add_placeholders(self):
         self.input_placeholders=tf.placeholder(tf.float32,[None,self.config.n_time_steps,self.config.n_features])
@@ -115,9 +113,8 @@ class AttentionClassifier(object):
 
     def run(self,inputs,labels,length):
         data_size=len(labels)
-        assert data_size == len(inputs), 'inputs_size not equal to labels_size'
         #To keep the matching of inputs and lables ,we should use the shuffle index
-        shuffle_index = np.random.permutation(np.arange(data_size))
+        shuffle_index = np.random.permutation(data_size)
         inputs_shuffle = inputs[shuffle_index]
         labels_shuffle = labels[shuffle_index]
         length_shuffle = length[shuffle_index]
@@ -131,6 +128,7 @@ class AttentionClassifier(object):
         print('inputs_train:',inputs_train.shape,'labels_train:',labels_train.shape)
         #Only in this model I abandon the last several sentences.I don't find a way to get the dynamic n_batches to build the cycle in prediction.
         n_batches = int((index_split - 1) / self.config.batch_size)
+        accuracy_max=0.0
         self.session=tf.Session()
         with self.session as sess:
             sess.run(tf.global_variables_initializer())
@@ -152,13 +150,18 @@ class AttentionClassifier(object):
                 train_loss_epoch=np.mean(train_loss)
                 train_accuracy_epoch=np.mean(train_accuracy)
                 print('loss_train:{:.3f}'.format(train_loss_epoch),'accuracy_train:{:.3f}'.format(train_accuracy_epoch))
-                self.saver.save(sess,os.path.join(self.save_path,'model'),global_step=(iteration_epoch))
                 accuracy_test=self.test(sess,inputs_test,labels_test,length_test)
+                if accuracy_test>accuracy_max :
+                    accuracy_max=accuracy_test
+                    print(self.saver.save(sess,self.save_path))
                 print('the accuracy in test :{:.3f}'.format(accuracy_test))
 
-    def fit(self,inputs,labels,length):
+    def fit(self,inputs,labels,length,model_position):
         print('this a text classifier using bi-GRU with Attention ')
-
+        self.save_path = os.path.abspath(os.path.join(model_path, model_position))
+        if not os.path.exists(self.save_path):
+            os.makedirs(self.save_path)
+        self.save_path=os.path.abspath(os.path.join(self.save_path,'model'))
         inputs=np.array(inputs)
         labels=np.array(labels)
         length=np.array(length)
@@ -166,12 +169,34 @@ class AttentionClassifier(object):
         print('the shape of labels:',labels.shape)
         print('the shape of length of sentence:',length.shape)
         self.run(inputs,labels,length)
+#load a saved model and return the predict index
+    def pred_test(self,inputs,length,model_position):
+        self.save_path = os.path.abspath(os.path.join(model_path, model_position))
+        session=tf.Session()
+        with session as sess:
+            sess.run(tf.global_variables_initializer())
+            self.saver.restore(sess=sess, save_path=os.path.join(self.save_path,'model'))
+            data_size=len(length)
+            pred=[]
+            n_batches = int((data_size - 1) / self.config.batch_size) + 1
+            for iter in range(n_batches):
+                start=iter*self.config.batch_size
+                end=min(start+self.config.batch_size,data_size)
+                feed_dict={self.input_placeholders:inputs[start:end],self.length_placeholders:length[start:end]}
+                pred_batch=sess.run([self.pred],feed_dict=feed_dict)
+                pred_batch=np.squeeze(np.array(pred_batch),axis=0)
+                pred.extend(np.argmax(pred_batch,axis=1).tolist())
+        pred=np.array(pred,dtype=int)
+        print(pred.shape)
+        return pred
+
+
 def main():
     model=AttentionClassifier()
     inputs=np.load(X_embedding_file)
     labels=np.load(Y_vec_file)
     length_sentence=np.load(length_sentence_file)
-    model.fit(inputs,labels,length_sentence)
+    model.fit(inputs,labels,length_sentence,'model0')
 
 if __name__ == '__main__':
     main()
