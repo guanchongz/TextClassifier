@@ -10,11 +10,11 @@ datafile=r'C:\Users\guan\Desktop\data\comment.csv'#file of resources
 Xfile=r'C:\Users\guan\Desktop\data\X_2and5.txt'#file of inputs sentences
 Yfile=r'C:\Users\guan\Desktop\data\Y_2and5.txt'#file of labels
 stopfile=r'C:\Users\guan\Desktop\data\chinese_stop_words.txt'#file of stop words
-word2vec=r'C:\Users\guan\Desktop\data\word2vec_64.model'
+word2vec=r'C:\Users\guan\Desktop\data\word2vec_32.model'
 
 def main():
     #creatdataset([1,4])
-    creatword2vec(64)
+    creatword2vec(32)
 
 stopwords=[line.rstrip() for line in codecs.open(stopfile,'r',encoding="utf-8")]
 data=[[],[],[],[],[]]
@@ -63,11 +63,11 @@ with codecs.open(datafile, "r",encoding='utf-8') as doc:
 #if I should extract part of the sentence,I will shuffle them first,because the sentence in the file is ranked in some order.
 def creatdataset(starlist):
     data_final=[]
-#extract the data to one list
+    #extract the data to one list
     for i in starlist:
         data_final.extend(data[i])
     print (len(data_final))
-   #save the sentences and labels separately 
+    #save the sentences and labels separately 
     with codecs.open(Xfile,'w',encoding='UTF-8') as out:
         for line in data_final:
             s=''

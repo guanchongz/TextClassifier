@@ -3,16 +3,16 @@ from queue import Queue
 import numpy as np
 from gensim.models import Word2Vec
 def main():
-    dimention=64#the dimention of word vector
+    dimention=32#the dimention of word vector
     n_class=2#the number of classes in label
     len_max=50#the maximum length in sentences
-    
+
     Xfile=r'C:\Users\guan\Desktop\data\X_2and5.txt'
     Yfile=r'C:\Users\guan\Desktop\data\Y_2and5.txt'
-    X_embedding_file=r'C:\Users\guan\Desktop\data\X_embedding_2and5_64'
-    Y_vec_file=r'C:\Users\guan\Desktop\data\Y_vec_2and5_64'
-    length_sentence_file=r'C:\Users\guan\Desktop\data\length_2and5_64'
-    word2vec=r'C:\Users\guan\Desktop\data\word2vec_64.model'
+    X_embedding_file=r'C:\Users\guan\Desktop\data\X_embedding_2and5_32'
+    Y_vec_file=r'C:\Users\guan\Desktop\data\Y_vec_2and5_32'
+    length_sentence_file=r'C:\Users\guan\Desktop\data\length_2and5_32'
+    word2vec=r'C:\Users\guan\Desktop\data\word2vec_32.model'
     Xf=codecs.open(Xfile,'r',encoding='UTF-8')
     Yf=codecs.open(Yfile,'r',encoding='UTF-8')
     X=[]

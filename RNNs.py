@@ -48,6 +48,7 @@ class LSTMClassifier(object):
         #extract the vector in the time step of the last word
         h=[]
         #This cycle seem to consume lots of time ,but I don't find a more efficient way
+        #probabally we can transform the length to a one-het vector and then use the matrix multiply to solve this problem
         for i in range(self.config.batch_size) :
             h.append(output_lstm[i][self.length_placeholders[i]-1])
         self.W=tf.Variable(tf.truncated_normal([self.config.n_features,self.config.n_classes],stddev=0.1),dtype=tf.float32)

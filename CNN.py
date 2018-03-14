@@ -62,9 +62,9 @@ class CNNClassifier(object):
         #single DNN layer
         self.W=tf.get_variable(name='W',shape=[n_units,self.config.n_classes],initializer = tf.contrib.layers.xavier_initializer())
         self.b=tf.Variable(tf.constant(0.0,shape=[self.config.n_classes]))
-        self.prediction=tf.nn.xw_plus_b(conv_output_drop,self.W,self.b)
+        prediction=tf.nn.xw_plus_b(conv_output_drop,self.W,self.b)
         # For convenience to use the tensorflow function,we return the values which can be transformed to y_hat only by a softmax function
-        return self.prediction
+        return prediction
 
     def add_loss_op(self,prediction):
         # Here we use softmax repeatedly,but the n_class is so small that the wasted time is too little.
@@ -119,8 +119,7 @@ class CNNClassifier(object):
         labels_test=labels_shuffle[index_split:]
         length_test=length_shuffle[index_split:]
         print('inputs_train:',inputs_train.shape,'labels_train:',labels_train.shape)
-        #Only in this model I abandon the last several sentences.I don't find a way to get the dynamic n_batches to build the cycle in prediction.
-        n_batches = int((index_split - 1) / self.config.batch_size)
+        n_batches = int((index_split - 1) / self.config.batch_size)+1
         self.session=tf.Session()
         with self.session as sess:
             sess.run(tf.global_variables_initializer())

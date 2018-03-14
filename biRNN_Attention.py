@@ -3,20 +3,20 @@ import numpy as np
 import os
 from tensorflow.contrib import rnn
 
-X_embedding_file = r'C:\Users\guan\Desktop\data\X_embedding_2and5.npy'
-Y_vec_file = r'C:\Users\guan\Desktop\data\Y_vec_2and5.npy'
-length_sentence_file=r'C:\Users\guan\Desktop\data\length_2and5.npy'
+X_embedding_file = r'C:\Users\guan\Desktop\data\X_embedding_2and5_32.npy'
+Y_vec_file = r'C:\Users\guan\Desktop\data\Y_vec_2and5_32.npy'
+length_sentence_file=r'C:\Users\guan\Desktop\data\length_2and5_32.npy'
 model_path=r'C:\Users\guan\Desktop\data\models'
 class config(object):
     n_classes=2
-    n_features=128
+    n_features=64
     n_layers=1
     dropout_keep=1.0
-    batch_size=256
+    batch_size=512
     n_time_steps=50
     l2_loss_rate= 10e-5
     n_epoches=15
-    data_rate_train=0.8
+    data_rate_train=0.9
 
 class AttentionClassifier(object):
     def __init__(self):
@@ -126,8 +126,7 @@ class AttentionClassifier(object):
         labels_test=labels_shuffle[index_split:]
         length_test=length_shuffle[index_split:]
         print('inputs_train:',inputs_train.shape,'labels_train:',labels_train.shape)
-        #Only in this model I abandon the last several sentences.I don't find a way to get the dynamic n_batches to build the cycle in prediction.
-        n_batches = int((index_split - 1) / self.config.batch_size)
+        n_batches = int((index_split - 1) / self.config.batch_size)+1
         accuracy_max=0.0
         self.session=tf.Session()
         with self.session as sess:

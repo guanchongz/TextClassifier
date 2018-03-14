@@ -1,15 +1,15 @@
 import numpy as np 
 import random
 from biRNN_Attention import AttentionClassifier as Model
-X_embedding_file = r'C:\Users\guan\Desktop\data\X_embedding_2and5.npy'
-Y_vec_file = r'C:\Users\guan\Desktop\data\Y_vec_2and5.npy'
-length_sentence_file=r'C:\Users\guan\Desktop\data\length_2and5.npy'
-X_embedding_file_test = r'C:\Users\guan\Desktop\data\X_embedding_2and5.npy'
+X_embedding_file = r'C:\Users\guan\Desktop\data\X_embedding_2and5_64.npy'
+Y_vec_file = r'C:\Users\guan\Desktop\data\Y_vec_2and5_64.npy'
+length_sentence_file=r'C:\Users\guan\Desktop\data\length_2and5_64.npy'
+X_embedding_file_test = r'C:\Users\guan\Desktop\data\X_embedding_2and5_64.npy'
 #this should be changed to a new data set when applying actually
 #I split the data set for train and test instead.
-Y_vec_file_test = r'C:\Users\guan\Desktop\data\Y_vec_2and5.npy'
-length_sentence_file_test=r'C:\Users\guan\Desktop\data\length_2and5.npy'
-n_models=9#the number of  models which would be ensembled
+Y_vec_file_test = r'C:\Users\guan\Desktop\data\Y_vec_2and5_64.npy'
+length_sentence_file_test=r'C:\Users\guan\Desktop\data\length_2and5_64.npy'
+n_models=7#the number of  models which would be ensembled
 def main():
     #train()
     test()
@@ -42,12 +42,12 @@ def test():
     for i in range(n_models):
         prediction+=model.pred_test(inputs,length,'model{0}'.format(i))
         print('prediction on model{0} finished'.format(i))
-    prediction_final=np.where(prediction>=4,1,0)#prediction >= 4 means that there are at least 4 models predict the output as 1
+    n_split=int(n_models/2)+1
+    prediction_final=np.where(prediction>=n_split,1,0)#prediction >= n_split means that there are at least n_split models predict the output as 1
     labels=np.argmax(labels,axis=-1)
     result=np.equal(prediction_final,labels)
     n_correct=np.sum(result)
     accuracy=float(n_correct)/float(len(result))
     print(accuracy)
-
 if __name__ == '__main__':
     main()
