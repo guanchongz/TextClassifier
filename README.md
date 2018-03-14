@@ -13,3 +13,5 @@ In my experiment，the CNN model performs poor.I think the reason is the length 
 Limited by my GPU,I'm sorry to I could only use the adam optimizer for efficiency.
 
 At last I use a bagging methon to improve the performance,though the result only be  a little better.
+
+more detail :http://blog.csdn.net/qq_37171771/article/details/79541598
