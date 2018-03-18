@@ -15,3 +15,5 @@ Limited by my GPU,I'm sorry to I could only use the adam optimizer for efficienc
 At last I use a bagging methon to improve the performance,though the result only be  a little better.
 
 more detail :http://blog.csdn.net/qq_37171771/article/details/79541598
+
+New improvement : according to Hownet corpus,add one dimention to the word vectors,which stand for positive or negtive evaluation.The accuracy increased 3%.
