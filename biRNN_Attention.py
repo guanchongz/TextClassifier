@@ -3,18 +3,18 @@ import numpy as np
 import os
 from tensorflow.contrib import rnn
 
-X_embedding_file = r'C:\Users\guan\Desktop\data\X_embedding_2and5_32.npy'
-Y_vec_file = r'C:\Users\guan\Desktop\data\Y_vec_2and5_32.npy'
-length_sentence_file=r'C:\Users\guan\Desktop\data\length_2and5_32.npy'
+X_embedding_file = r'C:\Users\guan\Desktop\data\X_embedding_2and5_65.npy'
+Y_vec_file = r'C:\Users\guan\Desktop\data\Y_vec_2and5_65.npy'
+length_sentence_file=r'C:\Users\guan\Desktop\data\length_2and5_65.npy'
 model_path=r'C:\Users\guan\Desktop\data\models'
-class config(object):
+class config(object)
     n_classes=2
-    n_features=64
+    n_features=66
     n_layers=1
     dropout_keep=1.0
-    batch_size=512
+    batch_size=256
     n_time_steps=50
-    l2_loss_rate= 10e-5
+    l2_loss_rate= 10e-6
     n_epoches=15
     data_rate_train=0.9
 

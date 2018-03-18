@@ -3,16 +3,19 @@ from queue import Queue
 import numpy as np
 from gensim.models import Word2Vec
 def main():
-    dimention=32#the dimention of word vector
+    dimention=65#the dimention of word vector
     n_class=2#the number of classes in label
     len_max=50#the maximum length in sentences
-
+    negword_file=r'C:\Users\guan\Desktop\data\负面评价词语（中文）.txt'
+    posword_file=r'C:\Users\guan\Desktop\data\正面评价词语（中文）.txt'
+    negwords=set([line.rstrip() for line in codecs.open(negword_file,'r',encoding="utf-8")])
+    poswords=set([line.rstrip() for line in codecs.open(posword_file,'r',encoding="utf-8")])
     Xfile=r'C:\Users\guan\Desktop\data\X_2and5.txt'
     Yfile=r'C:\Users\guan\Desktop\data\Y_2and5.txt'
-    X_embedding_file=r'C:\Users\guan\Desktop\data\X_embedding_2and5_32'
-    Y_vec_file=r'C:\Users\guan\Desktop\data\Y_vec_2and5_32'
-    length_sentence_file=r'C:\Users\guan\Desktop\data\length_2and5_32'
-    word2vec=r'C:\Users\guan\Desktop\data\word2vec_32.model'
+    X_embedding_file=r'C:\Users\guan\Desktop\data\X_embedding_2and5_65'
+    Y_vec_file=r'C:\Users\guan\Desktop\data\Y_vec_2and5_65'
+    length_sentence_file=r'C:\Users\guan\Desktop\data\length_2and5_65'
+    word2vec=r'C:\Users\guan\Desktop\data\word2vec_64.model'
     Xf=codecs.open(Xfile,'r',encoding='UTF-8')
     Yf=codecs.open(Yfile,'r',encoding='UTF-8')
     X=[]
@@ -33,8 +36,15 @@ def main():
     for sentence in X:
         sentence_embedding=[]
         for word in sentence :
-            try:
-                sentence_embedding.append(word_vectors.wv[word])#transform the words to vectors
+            try :
+                vector=list(word_vectors.wv[word])
+                if word in negwords :
+                    vector.append(-5.0)
+                elif word in poswords:
+                    vector.append(5.0)
+                else :
+                    vector.append(0.0)
+                sentence_embedding.append(vector)#transform the words to vectors
             except:
                 continue
         #get the labels which mate the sentence
