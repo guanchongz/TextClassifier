@@ -7,9 +7,9 @@ X_embedding_file = r'C:\Users\guan\Desktop\data\X_embedding_2and5_65.npy'
 Y_vec_file = r'C:\Users\guan\Desktop\data\Y_vec_2and5_65.npy'
 length_sentence_file=r'C:\Users\guan\Desktop\data\length_2and5_65.npy'
 model_path=r'C:\Users\guan\Desktop\data\models'
-class config(object)
+class config(object):
     n_classes=2
-    n_features=66
+    n_features=65
     n_layers=1
     dropout_keep=1.0
     batch_size=256
@@ -83,8 +83,7 @@ class AttentionClassifier(object):
                         tf.nn.l2_loss(self.b_attention)+tf.nn.l2_loss(self.u_attention)
         loss=tf.reduce_mean(tf.nn.softmax_cross_entropy_with_logits(logits=pred,labels=self.label_placeholders))
         loss+=self.config.l2_loss_rate*l2_loss
-        y_hat=tf.nn.softmax(pred)
-        prediction=tf.equal(tf.argmax(y_hat,axis=1),tf.argmax(self.label_placeholders,axis=1))
+        prediction=tf.equal(tf.argmax(pred,axis=1),tf.argmax(self.label_placeholders,axis=1))
         accuracy = tf.reduce_mean(tf.cast(prediction, tf.float32))
         return loss,accuracy
 

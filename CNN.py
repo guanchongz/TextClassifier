@@ -71,7 +71,7 @@ class CNNClassifier(object):
         l2_loss=tf.nn.l2_loss(self.W)+tf.nn.l2_loss(self.b)
         loss=tf.nn.softmax_cross_entropy_with_logits(logits=prediction,labels=self.label_placeholders)
         losses=tf.reduce_mean(loss)+self.config.l2_rate*l2_loss
-        pred = tf.equal(tf.argmax(tf.nn.softmax(prediction),axis=1), tf.argmax(self.label_placeholders, axis=1))
+        pred = tf.equal(tf.argmax(prediction,axis=1), tf.argmax(self.label_placeholders, axis=1))
         accuracy= tf.reduce_mean(tf.cast(pred,tf.float32))
         return losses,accuracy
 

@@ -62,8 +62,7 @@ class LSTMClassifier(object):
         l2_loss=tf.nn.l2_loss(self.W)+tf.nn.l2_loss(self.b)
         loss=tf.reduce_mean(tf.nn.softmax_cross_entropy_with_logits(logits=pred,labels=self.label_placeholders))
         loss+=self.config.l2_loss_rate*l2_loss
-        y_hat=tf.nn.softmax(pred)
-        prediction=tf.equal(tf.argmax(y_hat,axis=1),tf.argmax(self.label_placeholders,axis=1))
+        prediction=tf.equal(tf.argmax(pred,axis=1),tf.argmax(self.label_placeholders,axis=1))
         accuracy = tf.reduce_mean(tf.cast(prediction, tf.float32))
         return loss,accuracy
 
