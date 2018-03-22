@@ -1,14 +1,14 @@
 import tensorflow as tf
 import numpy as np
 import os
-X_embedding_file=r'C:\Users\guan\Desktop\data\X_embedding_2and5.npy'
-Y_vec_file=r'C:\Users\guan\Desktop\data\Y_vec_2and5.npy'
+X_embedding_file=r'C:\Users\guan\Desktop\data\X_embedding_2and5_65.npy'
+Y_vec_file=r'C:\Users\guan\Desktop\data\Y_vec_2and5_65.npy'
 class config(object):
     n_classes=2
-    n_features=128
+    n_features=65
     n_sentence=50
     dropout_keep=1.0
-    batch_size=512
+    batch_size=256
     n_epoches=100
     n_epoches_adam=20
     lr=0.00001
@@ -103,21 +103,18 @@ class CNNClassifier(object):
         accuracy = np.mean(accuracy_list)
         return accuracy
 
-    def run(self,inputs,labels,length):
+    def run(self,inputs,labels):
         data_size=len(labels)
         assert data_size == len(inputs), 'inputs_size not equal to labels_size'
         #To keep the matching of inputs and lables ,we should use the shuffle index
         shuffle_index = np.random.permutation(np.arange(data_size))
         inputs_shuffle = inputs[shuffle_index]
         labels_shuffle = labels[shuffle_index]
-        length_shuffle = length[shuffle_index]
         index_split=int(data_size*self.config.data_rate_train)
         inputs_train=inputs_shuffle[:index_split]
         labels_train=labels_shuffle[:index_split]
-        length_train=length_shuffle[:index_split]
         inputs_test=inputs_shuffle[index_split:]
         labels_test=labels_shuffle[index_split:]
-        length_test=length_shuffle[index_split:]
         print('inputs_train:',inputs_train.shape,'labels_train:',labels_train.shape)
         n_batches = int((index_split - 1) / self.config.batch_size)+1
         self.session=tf.Session()
@@ -141,7 +138,7 @@ class CNNClassifier(object):
                 train_loss_epoch=np.mean(train_loss)
                 train_accuracy_epoch=np.mean(train_accuracy)
                 print('loss_train:{:.3f}'.format(train_loss_epoch),'accuracy_train:{:.3f}'.format(train_accuracy_epoch))
-                self.saver.save(sess,os.path.join(self.save_path,'model'),global_step=(iteration_epoch))
+#                self.saver.save(sess,os.path.join(self.save_path,'model'),global_step=(iteration_epoch))
                 accuracy_test=self.test(sess,inputs_test,labels_test)
                 print('the accuracy in test :{:.3f}'.format(accuracy_test))
 
